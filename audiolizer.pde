@@ -5,7 +5,6 @@
 // Meco 2014: Audio Visualizer                                            //
 // ---------------------------------------------------------------------- //
 
-
 import ddf.minim.*;
 import ddf.minim.analysis.*;
 import processing.video.*;
@@ -37,17 +36,29 @@ int spacing=1;
 float yScale = 0.3;
   // für oberen und unteren Graph
 float yScale2 = 0.05;
+
+String audioFilePath = "";
  
  
 void setup() {
+    
   size(1024, 768);
   smooth();
- 
+
+  // user muss file auswaehlen
+  selectInput("Select a file to process:", "fileSelected");
+
+  // warte bis file ausgewaehlt ist
+  while(audioFilePath == "") {
+    delay(100);
+  }
+  
   // Konstruktor des Minim Objekts aufrufen
   minim = new Minim(this);
  
   // Einlesen der Musikdatei
-  input = minim.loadFile("Blitz.mp3");
+  //input = minim.loadFile("Blitz.mp3");
+  input = minim.loadFile(audioFilePath);
  
   // Wiedergabe starten
   input.play();
@@ -56,7 +67,23 @@ void setup() {
   
   cam = new Capture(this,320,240,30);
   cam.start();
+  
+
+  
 }
+
+// file selector
+void fileSelected(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+    audioFilePath = "";
+    
+  } else {
+    audioFilePath = selection.getAbsolutePath();
+    println("User selected " + audioFilePath);
+  }
+}
+
  
 void draw() {
  
