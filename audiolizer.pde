@@ -37,7 +37,10 @@ float yScale = 0.3;
   // für oberen und unteren Graph
 float yScale2 = 0.05;
 
-String audioFilePath = "";
+PFont f;
+File audioFilePath = null;
+int fileNameOpacity = 255;
+int frames = 0;
  
  
 void setup() {
@@ -49,16 +52,18 @@ void setup() {
   selectInput("Select a file to process:", "fileSelected");
 
   // warte bis file ausgewaehlt ist
-  while(audioFilePath == "") {
+  while(audioFilePath == null) {
     delay(100);
   }
+  
+  f = createFont("Arial",16,true);
   
   // Konstruktor des Minim Objekts aufrufen
   minim = new Minim(this);
  
   // Einlesen der Musikdatei
   //input = minim.loadFile("Blitz.mp3");
-  input = minim.loadFile(audioFilePath);
+  input = minim.loadFile(audioFilePath.getAbsolutePath());
  
   // Wiedergabe starten
   input.play();
@@ -76,17 +81,19 @@ void setup() {
 void fileSelected(File selection) {
   if (selection == null) {
     println("Window was closed or the user hit cancel.");
-    audioFilePath = "";
+    audioFilePath = null;
     
   } else {
-    audioFilePath = selection.getAbsolutePath();
-    println("User selected " + audioFilePath);
+    audioFilePath = selection;
+    println("User selected " + audioFilePath.getAbsolutePath());
   }
 }
 
  
 void draw() {
  
+
+  
   // für etwas Bewegunsunschärfe
   fill(0, 60);
   rect(-1, -1, width+1, height+1);
@@ -158,6 +165,22 @@ void draw() {
     lightning((int)random(1024),height/2-90);
     lightning((int)random(1024),height/2+90);
   }
+  
+  
+  // Filename anzeigen und ausblenden 
+  if(fileNameOpacity > 0) {
+      frames++;
+      
+      if(frames > 10) {
+        fileNameOpacity = 255 - (frames*20); // je hoeher die zahl (20) desto schneller der Fade-Out
+      } 
+     
+      textFont(f,36);
+      fill(255, 255, 255, fileNameOpacity);
+      text(audioFilePath.getName(), 30, 40);
+  }
+
+    
   
 }
  
