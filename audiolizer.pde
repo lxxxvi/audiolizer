@@ -144,6 +144,8 @@ void draw() {
       cam.read();
     }
     image(cam, random(width),random(height));
+    tint(random(255), random(255), random(255));  // Tint
+
   }
 
   // Beatabfrage
