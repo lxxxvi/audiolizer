@@ -15,6 +15,9 @@ AudioPlayer input;
 BeatDetect beat;
 Capture cam;
 
+FFT fft;
+AudioMetaData meta;
+
 // Variablen für den Farbwelchsel
  int colorR = 0;
  boolean isWhite = false;
@@ -42,6 +45,8 @@ File audioFilePath = null;
 int fileNameOpacity = 255;
 int frames = 0;
  
+ int screen_width  = 1024;
+ int screen_height = 768;
  
 void setup() {
     
@@ -64,6 +69,9 @@ void setup() {
   // Einlesen der Musikdatei
   //input = minim.loadFile("Blitz.mp3");
   input = minim.loadFile(audioFilePath.getAbsolutePath());
+  meta = input.getMetaData();
+  
+  fft = new FFT(input.bufferSize(), input.sampleRate());
  
   // Wiedergabe starten
   input.play();
@@ -91,9 +99,7 @@ void fileSelected(File selection) {
 
  
 void draw() {
- 
-
-  
+   
   // für etwas Bewegunsunschärfe
   fill(0, 60);
   rect(-1, -1, width+1, height+1);
@@ -168,7 +174,7 @@ void draw() {
   
   
   // Filename anzeigen und ausblenden 
-  if(fileNameOpacity > 0) {
+  /*if(fileNameOpacity > 0) {
       frames++;
       
       if(frames > 10) {
@@ -178,8 +184,10 @@ void draw() {
       textFont(f,36);
       fill(255, 255, 255, fileNameOpacity);
       text(audioFilePath.getName(), 30, 40);
-  }
+  }*/
 
+  displayMetaData();
+  frequencySpectrum();
     
   
 }
@@ -226,3 +234,62 @@ void stop(){
 }
 
 
+// Source: http://code.compartmental.net/tools/minim/quickstart/
+void frequencySpectrum() {
+
+  // first perform a forward fft on one of song's buffers
+  // I'm using the mix buffer
+  //  but you can use any one you like
+  fft.forward(input.mix);
+ 
+  stroke(255, 0, 0, 128);
+  // draw the spectrum as a series of vertical lines
+  // I multiple the value of getBand by 4 
+  // so that we can see the lines better
+  for(int i = 0; i < fft.specSize(); i++)
+  {
+    line(i, height, i, height - fft.getBand(i)*4);
+  }
+ 
+  stroke(255);
+  // I draw the waveform by connecting 
+  // neighbor values with a line. I multiply 
+  // each of the values by 50 
+  // because the values in the buffers are normalized
+  // this means that they have values between -1 and 1. 
+  // If we don't scale them up our waveform 
+  // will look more or less like a straight line.
+  for(int i = 0; i < input.left.size() - 1; i++)
+  {
+    line(i, (screen_height/4)   + input.left.get(i)*100 , i+1, (screen_height/4) + input.left.get(i+1)*100);
+    line(i, (screen_height/4*3) + input.right.get(i)*100, i+1, (screen_height/4*3) + input.right.get(i+1)*100);
+  }
+
+}
+
+// display meta data
+void displayMetaData()
+{
+  int metaY = 15;
+  int yi = 40;
+  
+  textFont(f, screen_height/15);
+  textAlign(CENTER, CENTER);
+  text(meta.title() + "\nby " + meta.author(), screen_width / 2, screen_height / 2);
+  
+  //text("File Name: " + meta.fileName(), 5, metaY);
+  //text("Length (in milliseconds): " + meta.length(), 5, metaY+=yi);
+  //text("Title: " + meta.title(), 5, metaY+=yi);
+  //text("Author: " + meta.author(), 5, metaY+=yi); 
+  //text("Album: " + meta.album(), 5, metaY+=yi);
+  //text("Date: " + meta.date(), 5, metaY+=yi);
+  //text("Comment: " + meta.comment(), 5, metaY+=yi);
+  //text("Track: " + meta.track(), 5, metaY+=yi);
+  //text("Genre: " + meta.genre(), 5, metaY+=yi);
+  //text("Copyright: " + meta.copyright(), 5, metaY+=yi);
+  // text("Disc: " + meta.disc(), 5, metaY+=yi);
+  //text("Composer: " + meta.composer(), 5, metaY+=yi);
+  //text("Orchestra: " + meta.orchestra(), 5, metaY+=yi);
+  //text("Publisher: " + meta.publisher(), 5, metaY+=yi);
+  //text("Encoded: " + meta.encoded(), 5, metaY+=yi);
+}
